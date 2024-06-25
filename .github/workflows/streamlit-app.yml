@@ -28,5 +28,5 @@ jobs:
         uses: pmeier/pytest-results-action@main
         with:
           path: test-results.xml
-          summery: true
+          summary: true
           display-options: fEX

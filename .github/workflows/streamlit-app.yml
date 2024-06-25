@@ -22,3 +22,11 @@ jobs:
         with:
           app-path: test_app.py
           ruff: true
+          pytest-args: -v --junit-xml=test-results.xml
+      - name: Surface failing tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          path: test-results.xml
+          summery: true
+          display-options: fEX

@@ -1,5 +1,5 @@
 # .github/workflows/streamlit-app.yml
-name: Streamlit app
+name: Build & Deploy Streamlit app
 
 on:
   push:
@@ -11,11 +11,12 @@ permissions:
   contents: read
 
 jobs:
-  streamlit:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - uses: streamlit/streamlit-app-action@v0.0.3
@@ -30,3 +31,25 @@ jobs:
           path: test-results.xml
           summary: true
           display-options: fEX
+  docker:
+    needs: test # this line refers, after passing the test build the container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-actions@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          context: .
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/streamlit-cheat-sheet-app:latest
+          

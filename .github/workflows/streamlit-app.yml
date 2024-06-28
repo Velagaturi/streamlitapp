@@ -55,18 +55,23 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/streamlit-cheat-sheet-app:latest
   release:
-    name: Semantic Release
+    name: Bump-version
     runs-on: ubuntu-latest
     needs: Build-and-deploy-docker-image
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set Up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '14'
-      - name: Install Semantic Release
-        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
-      - name: Run Semantic Release
+          python-version: "3.11"
+      - name: Install bump2version
+        run:  pip install bump2version 
+      - name: Bump version
+        run: |
+          bump2version patch -allow-dirty
+      - name: Push version bump
+        run: |
+          git push --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: semantic-release

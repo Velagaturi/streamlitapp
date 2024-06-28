@@ -4,17 +4,17 @@ name: Build & Deploy Streamlit app
 on:
   push:
     branches: ["main"]
+    tags: 
+      - "v*.*.*"
   pull_request:
     branches: ["main"]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      VERSION: 1.0.0
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.11
@@ -55,17 +55,18 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/streamlit-cheat-sheet-app:latest
   release:
-    # name: Release
+    name: Semantic Release
     runs-on: ubuntu-latest
     needs: Build-and-deploy-docker-image
-    # if: github.event_name == 'pull' && github.ref == 'ref/head/main'
     steps:
-      - uses: actions/checkout@v2
-      - uses: CupOfTea696/gh-action-auto-release@v1.0.0
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          title: "Release: $version"
-          tag: "v$semver"
-          draft: false
-          regex: "/^Release: #{semver}$/i"
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '14'
+      - name: Install Sematic Release
+        run: npm install -g semantic-release @sematic-release/changelog @sematic-release/git @sematic-release/github
+      - name: Run Sematic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: semantic-release

@@ -69,7 +69,7 @@ jobs:
         run:  pip install bump2version 
       - name: Bump version
         run: |
-          bump2version patch -allow-dirty
+          bump2version patch
       - name: Push version bump
         run: |
           git push --follow-tags

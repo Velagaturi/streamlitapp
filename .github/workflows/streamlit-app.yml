@@ -64,9 +64,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '14'
-      - name: Install Sematic Release
-        run: npm install -g semantic-release @sematic-release/changelog @sematic-release/git @sematic-release/github
-      - name: Run Sematic Release
+      - name: Install Semantic Release
+        run: npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/github
+      - name: Run Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: semantic-release

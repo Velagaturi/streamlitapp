@@ -68,7 +68,8 @@ jobs:
       - name: Install bump2version
         run:  pip install bump2version 
       - name: Bump version
-        run: bump2version patch --allow-dirty
+        id: bump_version
+        run: bump2version patch
       - name: Push version bump
         run: git push --follow-tags
         env:
@@ -84,8 +85,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.bump-version.outputs.new_version }}
-          release_name: Release ${{ steps.bump-version.outputs.new_version }}
+          tag_name: v${{ steps.bump_version.outputs.new_version }}
+          release_name: Release ${{ steps.bump_version.outputs.new_version }}
           draft: false
           prerelease: false
       - name: Upload Release Assets
@@ -94,8 +95,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/your_package-${{steps.bump-version.outputs.new_version}}.tar.gz
-          asset_name: your_package-${{steps.bump-version.outputs.new_version}}.taz.gz
+          asset_path: ./dist/your_package-${{steps.bump_version.outputs.new_version}}.tar.gz
+          asset_name: your_package-${{steps.bump_version.outputs.new_version}}.tar.gz
           asset_content_type: application/gzip
 
     

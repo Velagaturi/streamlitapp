@@ -4,10 +4,11 @@ name: Build & Deploy Streamlit app
 on:
   push:
     branches: ["main"]
-    tags: 
-      - "v*.*.*"
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
+  release:
+      types: [created]
 
 permissions:
   contents: write
@@ -54,8 +55,7 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/streamlit-cheat-sheet-app:latest
-  release:
-    name: Bump-version
+  bump-version:
     runs-on: ubuntu-latest
     needs: Build-and-deploy-docker-image
     steps:
@@ -68,10 +68,34 @@ jobs:
       - name: Install bump2version
         run:  pip install bump2version 
       - name: Bump version
-        run: |
-          bump2version patch
+        run: bump2version patch
       - name: Push version bump
-        run: |
-          git push --follow-tags
+        run: git push --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  create-release:
+    runs-on: ubuntu-latest
+    needs: bump-version
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.bump-version.outputs.new_version }}
+          release_name: Release ${{ steps.bump-version.outputs.new_version }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/your_package-${{steps.bump-version.outputs.new_version}}.tar.gz
+          asset_name: your_package-${{steps.bump-version.outputs.new_version}}.taz.gz
+          asset_content_type: application/gzip
+
+    

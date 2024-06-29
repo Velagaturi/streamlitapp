@@ -67,6 +67,11 @@ jobs:
           python-version: "3.11"
       - name: Install bump2version
         run:  pip install bump2version 
+      - name: Configure Git
+        run: |
+          git config --global user.email "bhanuprakash.vlit@gmail.com"
+          git config --global user.name "GitHub Action"
+
       - name: Bump version
         id: bump_version
         run: bump2version patch

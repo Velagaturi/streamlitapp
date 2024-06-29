@@ -76,7 +76,13 @@ jobs:
         id: bump_version
         run: |
           bump2version patch 
-          echo "new_version=$(bump2version --dry-run --list patch | grep new_version | sed -r s,"^.*=",,)" >> $ GITHUB_ENV
+          NEW_VERSION=$(bump2version --dry-run --list patch | grep new_version | sed -r s,"^.*=",,)
+          echo "NEW_VERSION=${NEW_VERSION}" >> $ GITHUB_ENV
+      - name: Output new version for debugging
+        run: echo "NEW VERSION is $ NEW_VERSION"
+        env:
+          NEW_VERSION: ${{ env.NEW_VERSION }}
+
 
       - name: Push version bump
         run: git push --follow-tags
@@ -89,6 +95,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Output featch tags for debugging
+        run: git tag
 
       - name: Create GitHub Release
         id: create_release
@@ -96,8 +104,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.new_version}}
-          release_name: Release ${{ env.new_version }}
+          tag_name: ${{ env.NEW_VERSION}}
+          release_name: Release ${{ env.NEW_VERSION }}
           draft: false
           prerelease: false
       # - name: Upload Release Assets

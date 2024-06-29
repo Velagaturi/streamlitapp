@@ -74,7 +74,8 @@ jobs:
 
       - name: Bump version
         id: bump_version
-        run: bump2version patch
+        run: bump2version patch echo "new_version=$(bump2version --dry-run --list patch | grep new_version | sed -r s,"^.*=",,)" >> $ GITHUB_ENV
+
       - name: Push version bump
         run: git push --follow-tags
         env:
@@ -84,6 +85,9 @@ jobs:
     needs: bump-version
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -94,14 +98,14 @@ jobs:
           release_name: Release v${{ steps.bump_version.outputs.new_version }}
           draft: false
           prerelease: false
-      - name: Upload Release Assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/your_package-${{steps.bump_version.outputs.new_version}}.tar.gz
-          asset_name: your_package-${{steps.bump_version.outputs.new_version}}.tar.gz
-          asset_content_type: application/gzip
+      # - name: Upload Release Assets
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./dist/your_package-${{steps.bump_version.outputs.new_version}}.tar.gz
+      #     asset_name: your_package-${{steps.bump_version.outputs.new_version}}.tar.gz
+      #     asset_content_type: application/gzip
 
     

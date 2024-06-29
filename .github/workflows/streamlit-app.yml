@@ -71,10 +71,11 @@ jobs:
         run: |
           git config --global user.email "bhanuprakash.vlit@gmail.com"
           git config --global user.name "GitHub Action"
-
       - name: Bump version
         id: bump_version
-        run: bump2version patch
+        run: bump2version patch --allow-dirty echo "VERSION=$(bump2version --list | grep new_version | sed -r s,\".*=\",,)" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Push version bump
         run: git push --follow-tags
         env:
@@ -86,15 +87,46 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        run: gh release create "v${{ env.VERSION }}" --t "Release ${{env.VERSION}}" -n "Release" ${{env.VERSION}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.bump_version.outputs.new_version }}
-          release_name: Release ${{ steps.bump_version.outputs.new_version }}
-          draft: false
-          prerelease: false
-          
+      # - name: Set up GitHub CLI
+        # uses: actions/setup-github-cli@v2
+      # - name: Check ig tag exists
+      #   id: check_tag
+      #   run: |
+      #     TAG_EXISTS=$(gh release view v$
+      #     { { steps.bump_version.outputs.version }} --json tagName --jq '.tagName'|| echo "false")
+      #       echo "TAG_EXISTS=${TAG_EXISTS}" >> $GITHUB_ENV
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Deleate existing tag and release
+      #   if: env.TAG_EXISTS !='false'
+      #   run: |
+      #     gh release delete v${{ steps.bump_version.outputs.new_version }} -y
+      #     git tag -d v${{ steps.bump_version.outputs.new_version}}
+      #     git push origin :refs/tag/v${{steps.bump_version.outputs.new_version}}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+
+      # - name: Create GitHub Release
+      #   id: create_release
+      #   run: gh release create "v${{ env.VERSION }}" --t "Release ${{env.VERSION}}" -n "Release" ${{env.VERSION}}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        # uses: actions/create-release@v1
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # with:
+        #   tag_name: v${{ steps.bump_version.outputs.new_version }}
+        #   release_name: Release ${{ steps.bump_version.outputs.new_version }}
+        #   draft: false
+        #   prerelease: false
+
       # - name: Upload Release Assets
       #   uses: actions/upload-release-asset@v1
       #   env:

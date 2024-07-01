@@ -108,7 +108,7 @@ jobs:
           tag_name: ${{ needs.bump-version.outputs.NEW_VERSION}}
           release_name: Release v${{ needs.bump-version.outputs.NEW_VERSION }}
           draft: false
-          prerelease: false
+          prerelease: true
       # - name: Upload Release Assets
       #   uses: actions/upload-release-asset@v1
       #   env:

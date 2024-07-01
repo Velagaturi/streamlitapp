@@ -58,6 +58,8 @@ jobs:
   bump-version:
     runs-on: ubuntu-latest
     needs: Build-and-deploy-docker-image
+    outputs:
+      NEW_VERSION: ${{steps.bump_version.outputs.NEW_VERSION}}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -78,12 +80,11 @@ jobs:
           bump2version patch 
           NEW_VERSION=$(bump2version --dry-run --list patch | grep new_version | sed -r 's/^.*=//')
           echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+          echo "::set-output name=NEW_VERSION::${NEW_VERSION}"
       - name: Output new version for debugging
-        run: echo "NEW VERSION is $NEW_VERSION"
+        run: echo "NEW VERSION is ${{env.NEW_VERSION}}"
         env:
           NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
-
-
       - name: Push version bump
         run: git push --follow-tags
         env:
